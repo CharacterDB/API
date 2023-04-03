@@ -1,7 +1,7 @@
 
 // imports
 import express from 'express';
-import connection, { getCharacter } from './utilities/database.js';
+import conn, { getCharacter } from './utilities/database.js';
 
 import asyncWrapper from './utilities/asyncWrapper.js';
 import config from './config.js';
@@ -17,16 +17,19 @@ app.use((req, res, next) => {
 });
 
 app.get('/', asyncWrapper(async (req, res) => {
-    const { pronunciation = '' } = req.query;
-    const conn = await connection();
-    const [characters] = await conn.execute('SELECT id, symbol, transcription FROM transcription WHERE pronunciation LIKE ? ORDER BY id', [`%${pronunciation}%`]);
+    const { pronunciation } = req.query;
+    let characters;
+    if (pronunciation === undefined) {
+        characters = (await conn.execute('SELECT id, symbol, transcription FROM transcription ORDER BY id'))[0];
+    } else {
+        characters = (await conn.execute('SELECT id, symbol, transcription FROM transcription WHERE pronunciation LIKE ? ORDER BY id', [`%${pronunciation}%`]))[0];
+    }
     let data = await Promise.all(characters.map((character) => getCharacter(character)));
     res.send(data);
 }));
 
 app.get('/:id(\\d+)/', asyncWrapper(async (req, res) => {
     const { id } = req.params;
-    const conn = await connection();
     const [[character]] = await conn.execute('SELECT id, symbol, transcription FROM transcription WHERE id=?', [id]);
     const data = await getCharacter(character);
     res.send(data);
@@ -34,7 +37,6 @@ app.get('/:id(\\d+)/', asyncWrapper(async (req, res) => {
 
 app.get('/:symbol/', asyncWrapper(async (req, res) => {
     const { symbol } = req.params;
-    const conn = await connection();
     const [[character]] = await conn.execute('SELECT id, symbol, transcription FROM transcription WHERE symbol=?', [symbol]);
     const data = await getCharacter(character);
     res.send(data);

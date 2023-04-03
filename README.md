@@ -15,4 +15,3 @@ This app provides a restful api for CharDB.
 
  - Improve Error Handling
     - bad request errors
- - improve database connectivity
