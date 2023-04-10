@@ -1,7 +1,7 @@
 
 # CharacterDB/API
 
-This app provides a restful api for CharDB.
+This app provides a restful api for CharDB. Due to security considerations, this api is read only.
 
 ## Endpoints
 | Endpoint | Description |
